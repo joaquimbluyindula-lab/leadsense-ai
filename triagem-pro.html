@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadSense AI — Triagem Inteligente de Leads</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b0f;
+  --surface: #0e1219;
+  --surface2: #141923;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.14);
+  --text: #e8edf5;
+  --muted: #4a5568;
+  --muted2: #718096;
+  --quente: #ff4d6d;
+  --quente-glow: rgba(255,77,109,0.15);
+  --morno: #f6ad55;
+  --morno-glow: rgba(246,173,85,0.12);
+  --frio: #63b3ed;
+  --frio-glow: rgba(99,179,237,0.12);
+  --gold: #d4a843;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(99,179,237,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  background: rgba(8,11,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--frio), var(--quente));
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+
+.logo-text {
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+.logo-text span {
+  font-style: italic;
+  color: var(--muted2);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--muted2);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.status-pill:hover { border-color: var(--border-bright); }
+
+.pulse-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.pulse-dot.on { background: #48bb78; box-shadow: 0 0 8px rgba(72,187,120,0.6); animation: blink 2s infinite; }
+.pulse-dot.err { background: var(--quente); }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.settings-btn {
+  width: 32px; height: 32px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+.settings-btn:hover { border-color: var(--border-bright); }
+
+/* ── HERO ── */
+.hero {
+  padding: 120px 32px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 20px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+h1.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(38px, 6vw, 68px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+h1.hero-title em {
+  font-style: italic;
+  background: linear-gradient(90deg, var(--frio), var(--quente));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted2);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+/* ── WEBHOOK CONFIG MODAL ── */
+.config-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.config-overlay.open { display: flex; }
+
+.config-modal {
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 20px;
+  padding: 32px;
+  width: min(480px, 90vw);
+  animation: fadeUp 0.3s ease;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.modal-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.modal-sub { font-size: 13px; color: var(--muted2); margin-bottom: 24px; }
+
+.field-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 8px;
+}
+
+.field-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field-input:focus { border-color: var(--frio); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  flex: 1;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.btn-ghost {
+  padding: 11px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted2);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.btn-ghost:hover { border-color: var(--border-bright); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+.stat-card:hover { border-color: var(--border-bright); }
+
+.stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.stat-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+
+.stat-icon.q { background: var(--quente-glow); }
+.stat-icon.m { background: var(--morno-glow); }
+.stat-icon.f { background: var(--frio-glow); }
+.stat-icon.t { background: rgba(255,255,255,0.05); }
+
+.stat-trend {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.stat-value {
+  font-family: 'Instrument Serif', serif;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.stat-value.q { color: var(--quente); }
+.stat-value.m { color: var(--morno); }
+.stat-value.f { color: var(--frio); }
+.stat-value.t { color: var(--text); }
+
+.stat-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── WORKSPACE ── */
+.workspace {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 800px) {
+  .workspace { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  h1.hero-title { font-size: 38px; }
+}
+
+/* ── INPUT CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease both;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-icon {
+  width: 30px; height: 30px;
+  background: var(--surface2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.card-badge {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--muted2);
+  border: 1px solid var(--border);
+}
+
+.card-body { padding: 24px; }
+
+.input-area {
+  position: relative;
+}
+
+textarea {
+  width: 100%;
+  height: 160px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: rgba(99,179,237,0.4); }
+textarea::placeholder { color: var(--muted); }
+
+.textarea-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.char-count {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.clear-text {
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'Geist', sans-serif;
+  transition: color 0.2s;
+}
+.clear-text:hover { color: var(--text); }
+
+/* Examples */
+.section-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 0 10px;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.example {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.example:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.03); }
+
+.ex-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+.ex-tag.q { background: var(--quente-glow); color: var(--quente); }
+.ex-tag.m { background: var(--morno-glow); color: var(--morno); }
+.ex-tag.f { background: var(--frio-glow); color: var(--frio); }
+
+.ex-text {
+  font-size: 12px;
+  color: var(--muted2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+/* Analyze button */
+.analyze-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  letter-spacing: -0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.analyze-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.analyze-btn:hover::before { transform: translateX(100%); }
+.analyze-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(8,11,15,0.3);
+  border-top-color: var(--bg);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESULT CARD ── */
+.result-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  gap: 14px;
+}
+
+.empty-visual {
+  width: 64px; height: 64px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  color: var(--muted);
+}
+
+.empty-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  color: var(--muted2);
+  letter-spacing: -0.3px;
+}
+
+.empty-sub {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 200px;
+}
+
+.result-display { display: none; animation: fadeUp 0.4s ease; }
+
+/* Classification hero */
+.class-hero {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.class-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  transition: background 0.4s;
+}
+.class-hero.QUENTE::before { background: radial-gradient(circle at 80% 50%, var(--quente), transparent 60%); opacity: 0.15; }
+.class-hero.MORNO::before { background: radial-gradient(circle at 80% 50%, var(--morno), transparent 60%); opacity: 0.12; }
+.class-hero.FRIO::before { background: radial-gradient(circle at 80% 50%, var(--frio), transparent 60%); opacity: 0.12; }
+
+.class-eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 10px;
+}
+
+.class-main {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.class-emoji {
+  font-size: 44px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+.class-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -2px;
+  font-style: italic;
+}
+.class-name.QUENTE { color: var(--quente); }
+.class-name.MORNO { color: var(--morno); }
+.class-name.FRIO { color: var(--frio); }
+
+.class-priority {
+  margin-left: auto;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  self-align: flex-end;
+}
+.class-priority.ALTA { border-color: rgba(255,77,109,0.4); color: var(--quente); background: var(--quente-glow); }
+.class-priority.NORMAL { border-color: rgba(99,179,237,0.4); color: var(--frio); background: var(--frio-glow); }
+
+/* Info rows */
+.info-rows {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.info-row-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.info-row-value {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid;
+}
+.action-row.QUENTE { border-color: rgba(255,77,109,0.2); background: var(--quente-glow); }
+.action-row.MORNO { border-color: rgba(246,173,85,0.2); background: var(--morno-glow); }
+.action-row.FRIO { border-color: rgba(99,179,237,0.2); background: var(--frio-glow); }
+
+.action-icon { font-size: 18px; }
+.action-text { font-size: 12px; line-height: 1.5; }
+
+/* Raw JSON toggle */
+.raw-section {
+  padding: 0 24px 24px;
+}
+
+.raw-toggle-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.raw-toggle-btn:hover { border-color: var(--border-bright); color: var(--muted2); }
+
+.raw-content {
+  display: none;
+  margin-top: 8px;
+  background: #0a0c10;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #7dd3af;
+  overflow-x: auto;
+}
+
+/* ── HISTORY ── */
+.history-card {
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+
+.history-empty-row {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.h-list { max-height: 320px; overflow-y: auto; }
+.h-list::-webkit-scrollbar { width: 4px; }
+.h-list::-webkit-scrollbar-track { background: transparent; }
+.h-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.h-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  animation: fadeUp 0.3s ease;
+}
+.h-item:last-child { border-bottom: none; }
+.h-item:hover { background: rgba(255,255,255,0.02); }
+
+.h-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.h-dot.QUENTE { background: var(--quente); box-shadow: 0 0 6px var(--quente); }
+.h-dot.MORNO { background: var(--morno); }
+.h-dot.FRIO { background: var(--frio); }
+
+.h-msg {
+  flex: 1;
+  font-size: 13px;
+  color: var(--muted2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.h-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.h-tag.QUENTE { color: var(--quente); background: var(--quente-glow); }
+.h-tag.MORNO { color: var(--morno); background: var(--morno-glow); }
+.h-tag.FRIO { color: var(--frio); background: var(--frio-glow); }
+
+.h-time {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 300;
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 300px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav class="topbar">
+  <div class="logo">
+    <div class="logo-mark">🎯</div>
+    <div class="logo-text">Lead<span>Sense</span> AI</div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill" onclick="openConfig()">
+      <div class="pulse-dot" id="pulseDot"></div>
+      <span id="statusLabel">Configurar webhook</span>
+    </div>
+    <div class="settings-btn" onclick="openConfig()">⚙️</div>
+  </div>
+</nav>
+
+<!-- CONFIG MODAL -->
+<div class="config-overlay" id="configOverlay" onclick="closeConfigIfOutside(event)">
+  <div class="config-modal">
+    <div class="modal-title">Configurar Webhook</div>
+    <div class="modal-sub">Cole a URL do seu fluxo n8n para conectar a interface ao agente.</div>
+
+    <div class="field-label">URL do Webhook n8n</div>
+    <input class="field-input" id="webhookUrl" type="text"
+      value="http://localhost:5678/webhook-test/triagem-lead"
+      placeholder="http://localhost:5678/webhook-test/...">
+
+    <div style="margin-top:16px" class="field-label">Ambiente</div>
+    <div style="display:flex;gap:8px;margin-top:0">
+      <button onclick="setEnv('test')" id="envTest" style="flex:1;padding:9px;background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.4);border-radius:8px;color:var(--frio);font-family:'Geist Mono',monospace;font-size:10px;cursor:pointer">TESTE</button>
+      <button onclick="setEnv('prod')" id="envProd" style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted2);font-family:'Geist Mono',monospace;font-size:10px;cursor:pointer">PRODUÇÃO</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeConfig()">Cancelar</button>
+      <button class="btn-primary" onclick="saveAndTest()">Salvar e testar conexão</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Powered by IA · n8n + Groq LLM</div>
+  <h1 class="hero-title">Classifique<br><em>leads</em> com IA</h1>
+  <p class="hero-sub">Cole a mensagem de qualquer canal — WhatsApp, formulário, e-mail — e receba uma análise instantânea de temperatura e intenção de compra.</p>
+</section>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon t">📊</div>
+      </div>
+      <div class="stat-value t" id="statTotal">0</div>
+      <div class="stat-label">Total analisados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon q">🔥</div></div>
+      <div class="stat-value q" id="statQuente">0</div>
+      <div class="stat-label">Leads quentes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon m">🌡️</div></div>
+      <div class="stat-value m" id="statMorno">0</div>
+      <div class="stat-label">Leads mornos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon f">❄️</div></div>
+      <div class="stat-value f" id="statFrio">0</div>
+      <div class="stat-label">Leads frios</div>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+
+    <!-- INPUT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon">✍️</div>
+          <span class="card-title">Mensagem do Lead</span>
+        </div>
+        <span class="card-badge">ENTRADA</span>
+      </div>
+      <div class="card-body">
+        <div class="input-area">
+          <textarea id="msgInput" placeholder="Cole aqui a mensagem do lead — WhatsApp, e-mail, formulário, DM de Instagram..." oninput="onInput()"></textarea>
+          <div class="textarea-footer">
+            <span class="char-count"><span id="charCount">0</span> caracteres</span>
+            <button class="clear-text" onclick="clearInput()">limpar</button>
+          </div>
+        </div>
+
+        <div class="section-label">Exemplos para testar</div>
+        <div class="examples">
+          <button class="example" onclick="loadExample('Preciso contratar o plano premium ainda essa semana, minha empresa vai lançar o produto na sexta. Qual o valor?')">
+            <span class="ex-tag q">QUENTE</span>
+            <span class="ex-text">"Preciso contratar ainda essa semana..."</span>
+          </button>
+          <button class="example" onclick="loadExample('Achei o serviço interessante. Quando eu tiver um tempinho quero saber mais, mas sem pressa por enquanto.')">
+            <span class="ex-tag m">MORNO</span>
+            <span class="ex-text">"Achei interessante, mas sem pressa..."</span>
+          </button>
+          <button class="example" onclick="loadExample('Oi, vi o anúncio de vocês e fiquei curioso. O que exatamente vocês fazem mesmo?')">
+            <span class="ex-tag f">FRIO</span>
+            <span class="ex-text">"Vi o anúncio e fiquei curioso..."</span>
+          </button>
+        </div>
+
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+          <div class="btn-spinner" id="btnSpinner"></div>
+          <span id="btnLabel">Analisar Lead</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon">📡</div>
+          <span class="card-title">Resultado da Análise</span>
+        </div>
+        <span class="card-badge" id="resultBadge">AGUARDANDO</span>
+      </div>
+
+      <div class="result-empty" id="resultEmpty">
+        <div class="empty-visual">🤖</div>
+        <div class="empty-title">Pronto para analisar</div>
+        <div class="empty-sub">Insira uma mensagem e clique em Analisar Lead</div>
+      </div>
+
+      <div class="result-display" id="resultDisplay">
+        <div class="class-hero" id="classHero">
+          <div class="class-eyebrow">CLASSIFICAÇÃO DO LEAD</div>
+          <div class="class-main">
+            <div class="class-emoji" id="classEmoji">🔥</div>
+            <div class="class-name" id="className">QUENTE</div>
+            <div class="class-priority" id="classPriority">ALTA PRIORIDADE</div>
+          </div>
+        </div>
+
+        <div class="info-rows">
+          <div class="info-row">
+            <div class="info-row-label">Análise da IA</div>
+            <div class="info-row-value" id="motivoValue">—</div>
+          </div>
+
+          <div class="action-row" id="actionRow">
+            <div class="action-icon" id="actionIcon">🚀</div>
+            <div class="action-text" id="actionText">—</div>
+          </div>
+        </div>
+
+        <div class="raw-section">
+          <button class="raw-toggle-btn" onclick="toggleRaw()">{ } ver resposta bruta do agente</button>
+          <pre class="raw-content" id="rawContent"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card history-card">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-icon">📋</div>
+        <span class="card-title">Histórico da Sessão</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="card-badge" id="histCount">0 análises</span>
+        <button class="clear-text" onclick="clearHistory()">limpar</button>
+      </div>
+    </div>
+    <div class="h-list" id="hList">
+      <div class="history-empty-row" id="hEmpty">Nenhuma análise ainda nesta sessão</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-brand">
+    <div style="width:16px;height:16px;background:linear-gradient(135deg,var(--frio),var(--quente));border-radius:4px"></div>
+    LeadSense AI
+  </div>
+  <span>Agente de triagem · Powered by Joaquim.B.Luyindula</span>
+  <span id="footerTime">—</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let history = [];
+  let stats = { QUENTE: 0, MORNO: 0, FRIO: 0 };
+  let webhookUrl = 'http://localhost:5678/webhook-test/triagem-lead';
+  const emojis = { QUENTE: '🔥', MORNO: '🌡️', FRIO: '❄️' };
+
+  // Clock
+  setInterval(() => {
+    document.getElementById('footerTime').textContent =
+      new Date().toLocaleTimeString('pt-BR');
+  }, 1000);
+
+  function onInput() {
+    document.getElementById('charCount').textContent = document.getElementById('msgInput').value.length;
+  }
+
+  function clearInput() {
+    document.getElementById('msgInput').value = '';
+    onInput();
+  }
+
+  function loadExample(text) {
+    document.getElementById('msgInput').value = text;
+    onInput();
+  }
+
+  // Config modal
+  function openConfig() {
+    document.getElementById('configOverlay').classList.add('open');
+  }
+
+  function closeConfig() {
+    document.getElementById('configOverlay').classList.remove('open');
+  }
+
+  function closeConfigIfOutside(e) {
+    if (e.target === document.getElementById('configOverlay')) closeConfig();
+  }
+
+  function setEnv(env) {
+    const base = env === 'test'
+      ? 'http://localhost:5678/webhook-test/triagem-lead'
+      : 'http://localhost:5678/webhook/triagem-lead';
+    document.getElementById('webhookUrl').value = base;
+    document.getElementById('envTest').style.background = env === 'test' ? 'rgba(99,179,237,0.15)' : 'var(--surface2)';
+    document.getElementById('envTest').style.borderColor = env === 'test' ? 'rgba(99,179,237,0.4)' : 'var(--border)';
+    document.getElementById('envTest').style.color = env === 'test' ? 'var(--frio)' : 'var(--muted2)';
+    document.getElementById('envProd').style.background = env === 'prod' ? 'rgba(72,187,120,0.15)' : 'var(--surface2)';
+    document.getElementById('envProd').style.borderColor = env === 'prod' ? 'rgba(72,187,120,0.4)' : 'var(--border)';
+    document.getElementById('envProd').style.color = env === 'prod' ? '#48bb78' : 'var(--muted2)';
+  }
+
+  async function saveAndTest() {
+    webhookUrl = document.getElementById('webhookUrl').value;
+    const dot = document.getElementById('pulseDot');
+    const lbl = document.getElementById('statusLabel');
+    dot.className = 'pulse-dot';
+    lbl.textContent = 'Testando...';
+    try {
+      const r = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: 'ping' }),
+        signal: AbortSignal.timeout(5000)
+      });
+      if (r.ok) {
+        dot.className = 'pulse-dot on';
+        lbl.textContent = 'Conectado';
+        toast('✅ Webhook conectado com sucesso!');
+      } else {
+        dot.className = 'pulse-dot err';
+        lbl.textContent = 'Erro ' + r.status;
+        toast('⚠️ Webhook respondeu com erro ' + r.status);
+      }
+    } catch {
+      dot.className = 'pulse-dot err';
+      lbl.textContent = 'Sem conexão';
+      toast('❌ Não foi possível conectar. Verifique a URL e se o n8n está ativo.');
+    }
+    closeConfig();
+  }
+
+  // Analyze
+  async function analyze() {
+    const msg = document.getElementById('msgInput').value.trim();
+    if (!msg) { toast('⚠️ Digite a mensagem do lead primeiro'); return; }
+
+    const btn = document.getElementById('analyzeBtn');
+    const spinner = document.getElementById('btnSpinner');
+    const label = document.getElementById('btnLabel');
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    label.textContent = 'Analisando...';
+
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: msg })
+      });
+      const data = await res.json();
+      renderResult(data, msg);
+    } catch (e) {
+      toast('❌ Erro ao conectar ao webhook. Verifique as configurações.');
+    }
+
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    label.textContent = 'Analisar Lead';
+  }
+
+  function renderResult(data, msg) {
+    const c = data.classificacao || 'FRIO';
+    const motivo = data.motivo || '—';
+    const acao = data.acao || '—';
+    const prioridade = data.prioridade || 'NORMAL';
+
+    document.getElementById('resultEmpty').style.display = 'none';
+    document.getElementById('resultDisplay').style.display = 'block';
+    document.getElementById('resultBadge').textContent = c;
+
+    const hero = document.getElementById('classHero');
+    hero.className = 'class-hero ' + c;
+
+    document.getElementById('classEmoji').textContent = emojis[c];
+    const cn = document.getElementById('className');
+    cn.className = 'class-name ' + c;
+    cn.textContent = c;
+
+    const cp = document.getElementById('classPriority');
+    cp.className = 'class-priority ' + prioridade;
+    cp.textContent = prioridade === 'ALTA' ? '↑ ALTA PRIORIDADE' : '→ PRIORIDADE NORMAL';
+
+    document.getElementById('motivoValue').textContent = motivo;
+
+    const ar = document.getElementById('actionRow');
+    ar.className = 'action-row ' + c;
+    document.getElementById('actionIcon').textContent = c === 'QUENTE' ? '🚀' : c === 'MORNO' ? '📬' : '📁';
+    document.getElementById('actionText').textContent = acao;
+
+    document.getElementById('rawContent').textContent = JSON.stringify(data, null, 2);
+
+    // Stats
+    stats[c]++;
+    document.getElementById('statTotal').textContent = stats.QUENTE + stats.MORNO + stats.FRIO;
+    document.getElementById('statQuente').textContent = stats.QUENTE;
+    document.getElementById('statMorno').textContent = stats.MORNO;
+    document.getElementById('statFrio').textContent = stats.FRIO;
+
+    // History
+    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    history.unshift({ c, msg, time });
+    renderHistory();
+    toast(`${emojis[c]} Lead classificado como ${c}`);
+  }
+
+  function toggleRaw() {
+    const el = document.getElementById('rawContent');
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('hList');
+    const empty = document.getElementById('hEmpty');
+    document.getElementById('histCount').textContent = history.length + ' análise' + (history.length !== 1 ? 's' : '');
+
+    if (history.length === 0) {
+      list.innerHTML = '';
+      list.appendChild(empty);
+      empty.style.display = 'block';
+      return;
+    }
+
+    list.innerHTML = '';
+    history.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'h-item';
+      div.innerHTML = `
+        <div class="h-dot ${item.c}"></div>
+        <div class="h-msg">${item.msg}</div>
+        <span class="h-tag ${item.c}">${item.c}</span>
+        <span class="h-time">${item.time}</span>
+      `;
+      div.onclick = () => { loadExample(item.msg); };
+      list.appendChild(div);
+    });
+  }
+
+  function clearHistory() {
+    history = [];
+    stats = { QUENTE: 0, MORNO: 0, FRIO: 0 };
+    ['statTotal','statQuente','statMorno','statFrio'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('histCount').textContent = '0 análises';
+    renderHistory();
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  renderHistory();
+</script>
+</body>
+</html>
