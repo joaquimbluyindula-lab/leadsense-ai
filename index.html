@@ -885,8 +885,8 @@ footer {
 
     <div class="field-label">URL do Webhook n8n</div>
     <input class="field-input" id="webhookUrl" type="text"
-      value="http://localhost:5678/webhook/triagem-lead"
-      placeholder="http://localhost:5678/webhook-test/triagem-lead">
+      value="https://lifelike-dora-unthumped.ngrok-free.dev/webhook/triagem-lead"
+      placeholder="https://lifelike-dora-unthumped.ngrok-free.dev/webhook/triagem-lead">
 
     <div style="margin-top:16px" class="field-label">Ambiente</div>
     <div style="display:flex;gap:8px;margin-top:0">
@@ -1060,7 +1060,7 @@ footer {
 <script>
   let history = [];
   let stats = { QUENTE: 0, MORNO: 0, FRIO: 0 };
-  let webhookUrl = 'http://localhost:5678/webhook/triagem-lead';
+  let webhookUrl = 'https://lifelike-dora-unthumped.ngrok-free.dev/webhook/triagem-lead';
   const emojis = { QUENTE: '🔥', MORNO: '🌡️', FRIO: '❄️' };
 
   // Clock
@@ -1098,8 +1098,8 @@ footer {
 
   function setEnv(env) {
     const base = env === 'test'
-      ? 'http://localhost:5678/webhook-test/triagem-lead'
-      : 'http://localhost:5678/webhook/triagem-lead';
+      ? 'https://lifelike-dora-unthumped.ngrok-free.dev/webhook-test/triagem-lead'
+      : 'https://lifelike-dora-unthumped.ngrok-free.dev/webhook/triagem-lead';
     document.getElementById('webhookUrl').value = base;
     document.getElementById('envTest').style.background = env === 'test' ? 'rgba(99,179,237,0.15)' : 'var(--surface2)';
     document.getElementById('envTest').style.borderColor = env === 'test' ? 'rgba(99,179,237,0.4)' : 'var(--border)';
